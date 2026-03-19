@@ -49,11 +49,11 @@ function getTier(score) {
 }
 
 const DIM_META = {
-  code_safety:          { icon: 'find_in_page', name: 'Skill & Code Safety' },
-  credential_safety:    { icon: 'key',          name: 'Credential & Secrets' },
-  network_exposure:     { icon: 'lan',          name: 'Network & System' },
-  runtime_protection:   { icon: 'shield',       name: 'Runtime Protection' },
-  web3_safety:          { icon: 'token',        name: 'Web3 Safety' },
+  code_safety:          { icon: 'find_in_page', name: 'Skill & Code Safety', zh: '技能与代码安全' },
+  credential_safety:    { icon: 'key',          name: 'Credential & Secrets', zh: '凭证与密钥安全' },
+  network_exposure:     { icon: 'lan',          name: 'Network & System', zh: '网络与系统暴露' },
+  runtime_protection:   { icon: 'shield',       name: 'Runtime Protection', zh: '运行时防护' },
+  web3_safety:          { icon: 'token',        name: 'Web3 Safety', zh: 'Web3 安全' },
 };
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -294,7 +294,7 @@ function generateReport(data) {
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-3">
           <span class="material-symbols-outlined" style="color:${color}">${meta.icon}</span>
-          <span class="font-headline font-medium text-[#dfe2eb]">${meta.name}</span>
+          <span class="font-headline font-medium text-[#dfe2eb]" data-i18n="dim_${key}">${meta.name}</span>
         </div>
         <span class="font-headline font-bold" style="color:${color}">${isNA ? '--' : score}</span>
       </div>
@@ -327,9 +327,9 @@ function generateReport(data) {
       const isLast = i + FPP >= allFindings.length;
       let h = '';
       if (isFirst) {
-        h += `<div class="mb-6"><p class="text-xs font-label uppercase tracking-[0.2em] text-[#849588] mb-1">Active Vulnerability Stream</p><h1 class="text-3xl font-headline font-bold text-[#f5fff5] tracking-tight flex items-center gap-3"><span class="material-symbols-outlined text-[#ffb4ab]">bug_report</span>Findings <span class="text-[#849588] font-normal text-lg">(${totalFindings})</span></h1></div>`;
+        h += `<div class="mb-6"><p class="text-xs font-label uppercase tracking-[0.2em] text-[#849588] mb-1" data-i18n="vuln_stream">Active Vulnerability Stream</p><h1 class="text-3xl font-headline font-bold text-[#f5fff5] tracking-tight flex items-center gap-3"><span class="material-symbols-outlined text-[#ffb4ab]">bug_report</span><span data-i18n="findings">Findings</span> <span class="text-[#849588] font-normal text-lg">(${totalFindings})</span></h1></div>`;
       } else {
-        h += `<div class="mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-[#ffb4ab]">bug_report</span><span class="text-lg font-headline font-bold text-[#849588]">Findings — ${i+1}–${Math.min(i+FPP,allFindings.length)} of ${totalFindings}</span></div>`;
+        h += `<div class="mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-[#ffb4ab]">bug_report</span><span class="text-lg font-headline font-bold text-[#849588]" data-i18n="findings_range" data-range="${i+1}–${Math.min(i+FPP,allFindings.length)}" data-total="${totalFindings}">Findings — ${i+1}–${Math.min(i+FPP,allFindings.length)} of ${totalFindings}</span></div>`;
       }
       h += chunk.map(f => {
         const sev = (f.severity||'MEDIUM').toUpperCase();
@@ -344,13 +344,13 @@ function generateReport(data) {
         </div>`;
       }).join('');
       if (isLast && cleanDims.length > 0) {
-        h += `<div class="bg-[#1c2026] border border-[#3a4a3f]/15 rounded-xl p-8 mt-3 text-center"><span class="material-symbols-outlined text-4xl text-[#849588]/40 mb-2">verified_user</span><p class="font-headline font-bold text-[#dfe2eb] mb-1">${cleanDims.map(d=>d.name).join(', ')}</p><p class="text-sm text-[#849588]">No active threats detected. Clinically sterile.</p></div>`;
+        h += `<div class="bg-[#1c2026] border border-[#3a4a3f]/15 rounded-xl p-8 mt-3 text-center"><span class="material-symbols-outlined text-4xl text-[#849588]/40 mb-2">verified_user</span><p class="font-headline font-bold text-[#dfe2eb] mb-1">${cleanDims.map(d=>d.name).join(', ')}</p><p class="text-sm text-[#849588]" data-i18n="no_threats_clean">No active threats detected. Clinically sterile.</p></div>`;
       }
       findingsPages.push(h);
     }
   } else {
     let h = `<div class="mb-6"><h1 class="text-3xl font-headline font-bold text-[#f5fff5] tracking-tight flex items-center gap-3"><span class="material-symbols-outlined text-[#00ffa3]">verified_user</span>Findings <span class="text-[#849588] font-normal text-lg">(0)</span></h1></div>`;
-    h += `<div class="bg-[#1c2026] border border-[#3a4a3f]/15 rounded-xl p-12 text-center"><span class="material-symbols-outlined text-5xl text-[#00ffa3]/40 mb-3">shield</span><p class="text-xl font-headline font-bold text-[#dfe2eb] mb-2">All Clear</p><p class="text-sm text-[#849588]">No active threats detected across all dimensions.</p></div>`;
+    h += `<div class="bg-[#1c2026] border border-[#3a4a3f]/15 rounded-xl p-12 text-center"><span class="material-symbols-outlined text-5xl text-[#00ffa3]/40 mb-3">shield</span><p class="text-xl font-headline font-bold text-[#dfe2eb] mb-2" data-i18n="all_clear">All Clear</p><p class="text-sm text-[#849588]" data-i18n="no_threats_all">No active threats detected across all dimensions.</p></div>`;
     findingsPages.push(h);
   }
 
@@ -399,7 +399,7 @@ function generateReport(data) {
         <span class="material-symbols-outlined text-sm text-[#849588]/0 group-hover:text-[#849588]/50 transition-colors ml-auto shrink-0">chevron_right</span>
       </div>`;
     }).join('')}</div>`
-    : '<div class="text-center py-12 text-[#849588]">No recommendations.</div>';
+    : '<div class="text-center py-12 text-[#849588]" data-i18n="no_recs">No recommendations.</div>';
 
   // ── AI Analysis report ──
   const analysisText = data.analysis || '';
@@ -407,7 +407,7 @@ function generateReport(data) {
     ? `<div class="relative group">
         <div class="bg-[#0a0e14] border border-[#3a4a3f]/10 rounded-xl p-5 text-sm text-[#b9cbbd] leading-relaxed whitespace-pre-line" id="analysisText">${esc(analysisText)}</div>
         <button onclick="copyReport()" id="copyBtn" class="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-[#262a31] border border-[#3a4a3f]/30 rounded-lg text-[11px] font-semibold text-[#849588] hover:text-[#dfe2eb] hover:border-[#849588]/50 transition-all opacity-0 group-hover:opacity-100">
-          <span class="material-symbols-outlined text-sm" id="copyIcon">content_copy</span><span id="copyLabel">Copy Report</span>
+          <span class="material-symbols-outlined text-sm" id="copyIcon">content_copy</span><span id="copyLabel" data-i18n="copy_report">Copy Report</span>
         </button>
       </div>`
     : '';
@@ -446,13 +446,16 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
 <header class="shrink-0 flex justify-between items-center px-6 py-3 bg-[#10141a] shadow-[0px_8px_24px_rgba(0,0,0,0.3)]">
   <div class="text-lg font-bold text-[#f5fff5] flex items-center gap-2 font-['Space_Grotesk'] tracking-tight">
     <svg viewBox="0 0 540 540" width="24" height="24" class="shrink-0"><rect fill="#151515" width="540" height="540" rx="73"/><g transform="translate(127.125,136.125)" fill="#fff" fill-rule="nonzero"><path d="M188.93 65.32V65.34H116.13C70.82 65.34 34.09 102.86 34.09 149.14c0 46.28 36.73 83.8 82.04 83.8h9.24 8.67 35.53c9.1 0 16.47-7.53 16.47-16.82s-7.37-16.82-16.47-16.82h-34.95-.58-11.56c-29.98 0-54.31-22.32-54.31-50.01 0-27.69 24.33-50.37 54.31-50.37l36.87.12c0-.02 0-.04 0-.07h45.74c0 19.56-16.92 35.42-37.77 35.42-.7 0-1.36-.02-1.98-.05v.05H117c-8.14 0-14.73 6.74-14.73 15.05 0 8.31 6.6 15.05 14.73 15.05h14.16 2.89.58 34.95c27.92 0 50.56 23.12 50.56 51.63 0 28.52-22.63 51.64-50.56 51.64h-35.53-17.91C52 267.75 0 214.64 0 149.14 0 83.63 52 30.52 116.13 30.52h38.13 34.67 33.51c0 19.03-14.95 34.49-33.51 34.8M314.97 48.32h-20.14V70.13c0 1.87-1.53 3.39-3.41 3.39h-18.18c-1.88 0-3.41-1.52-3.41-3.39V48.32h-19.64c-1.88 0-3.41-1.52-3.41-3.39V28.53c0-1.87 1.53-3.39 3.41-3.39h19.64V3.39C269.83 1.52 271.35 0 273.23 0h18.18c1.88 0 3.41 1.52 3.41 3.39v21.74h20.14c1.88 0 3.41 1.52 3.41 3.39v16.4c0 1.87-1.53 3.39-3.41 3.39"/></g></svg>
-    AgentGuard Report
+    <span data-i18n="title">AgentGuard Report</span>
   </div>
   <div class="flex items-center gap-3">
-    <span class="text-[#849588] text-xs font-['Space_Grotesk'] tracking-[0.15em] uppercase">${protection_level} mode</span>
+    <span class="text-[#849588] text-xs font-['Space_Grotesk'] tracking-[0.15em] uppercase" data-i18n="prot_mode">${protection_level} mode</span>
     <span class="text-[#849588] text-xs">${ts.slice(0,10)}</span>
-    <button onclick="shareReport()" class="flex items-center gap-1.5 px-3 py-1.5 bg-[#262a31] border border-[#3a4a3f]/30 rounded-lg text-[11px] font-semibold text-[#849588] hover:text-[#dfe2eb] hover:border-[#849588]/50 transition-all">
-      <span class="material-symbols-outlined text-sm">share</span>Share
+    <button onclick="toggleLang()" id="langBtn" class="flex items-center gap-1 px-2.5 py-1.5 bg-[#262a31] border border-[#3a4a3f]/30 rounded-lg text-[11px] font-semibold text-[#849588] hover:text-[#dfe2eb] hover:border-[#849588]/50 transition-all">
+      <span class="material-symbols-outlined text-sm">translate</span><span id="langLabel">中文</span>
+    </button>
+    <button onclick="shareReport()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#262a31] border border-[#3a4a3f]/30 rounded-lg text-[11px] font-semibold text-[#849588] hover:text-[#dfe2eb] hover:border-[#849588]/50 transition-all">
+      <span class="material-symbols-outlined text-sm">share</span><span data-i18n="share">Share</span>
     </button>
   </div>
 </header>
@@ -475,9 +478,9 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
               </div>
             </div>
             <div class="inline-flex items-center px-4 py-1 rounded-full border" style="background:${tier.color}10;border-color:${tier.color}30">
-              <span class="text-[11px] font-headline font-bold tracking-[0.15em]" style="color:${tier.color}">TIER ${tier.grade} — ${tier.label}</span>
+              <span class="text-[11px] font-headline font-bold tracking-[0.15em]" style="color:${tier.color}" data-i18n="tier_badge">TIER ${tier.grade} — ${tier.label}</span>
             </div>
-            <p class="text-[#b9cbbd] text-sm italic leading-relaxed px-2">"${tier.quote}"</p>
+            <p class="text-[#b9cbbd] text-sm italic leading-relaxed px-2" data-i18n="quote">"${tier.quote}"</p>
           </div>
         </div>
       </section>
@@ -487,10 +490,10 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
         <div class="obsidian-layer h-full rounded-xl p-6 flex flex-col">
           <div class="flex justify-between items-end mb-5">
             <div>
-              <p class="text-[10px] font-label uppercase tracking-[0.2em] text-[#849588] mb-0.5">Diagnostic Metrics</p>
-              <h1 class="text-2xl font-headline font-bold text-[#f5fff5] tracking-tight">SECURITY DIMENSIONS</h1>
+              <p class="text-[10px] font-label uppercase tracking-[0.2em] text-[#849588] mb-0.5" data-i18n="diag_metrics">Diagnostic Metrics</p>
+              <h1 class="text-2xl font-headline font-bold text-[#f5fff5] tracking-tight" data-i18n="sec_dims">SECURITY DIMENSIONS</h1>
             </div>
-            <span class="text-[10px] font-label font-mono" style="color:${tier.color}">STATUS: ${healthLabel}</span>
+            <span class="text-[10px] font-label font-mono" style="color:${tier.color}" data-i18n="status_label">STATUS: ${healthLabel}</span>
           </div>
           <div class="grid grid-cols-1 gap-2.5 flex-1 content-start">
             ${dimRowsHtml}
@@ -498,15 +501,15 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
           <div class="mt-auto pt-5 grid grid-cols-3 gap-3">
             <div class="bg-[#10141a] p-3 rounded-lg flex flex-col items-center border border-[#3a4a3f]/5">
               <span class="text-xl font-headline font-bold text-[#f5fff5]">${skills_scanned}</span>
-              <span class="text-[9px] uppercase tracking-widest text-[#849588]">Skills</span>
+              <span class="text-[9px] uppercase tracking-widest text-[#849588]" data-i18n="skills">Skills</span>
             </div>
             <div class="bg-[#10141a] p-3 rounded-lg flex flex-col items-center border border-[#3a4a3f]/5">
               <span class="text-xl font-headline font-bold text-[#ffb4ab]">${totalFindings}</span>
-              <span class="text-[9px] uppercase tracking-widest text-[#849588]">Findings</span>
+              <span class="text-[9px] uppercase tracking-widest text-[#849588]" data-i18n="findings_label">Findings</span>
             </div>
             <div class="p-3 rounded-lg flex flex-col items-center border" style="background:${tier.color}08;border-color:${tier.color}15">
               <span class="text-xl font-headline font-black" style="color:${tier.color}">${tier.grade}</span>
-              <span class="text-[9px] uppercase tracking-widest" style="color:${tier.color}">Tier</span>
+              <span class="text-[9px] uppercase tracking-widest" style="color:${tier.color}" data-i18n="tier_label">Tier</span>
             </div>
           </div>
         </div>
@@ -528,28 +531,28 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
         <div class="absolute top-0 left-0 w-48 h-48 rounded-full blur-[100px] opacity-[0.04] pointer-events-none" style="background:${tier.color}"></div>
         <div class="flex justify-between items-start mb-5">
           <div>
-            <p class="text-[10px] font-label uppercase tracking-[0.2em] text-[#849588] mb-1">Security Analysis</p>
+            <p class="text-[10px] font-label uppercase tracking-[0.2em] text-[#849588] mb-1" data-i18n="sec_analysis">Security Analysis</p>
             <h1 class="text-2xl font-headline font-bold text-[#f5fff5] tracking-tight flex items-center gap-3">
-              <span class="material-symbols-outlined" style="color:${tier.color}">analytics</span>Diagnostic Report
+              <span class="material-symbols-outlined" style="color:${tier.color}">analytics</span><span data-i18n="diag_report">Diagnostic Report</span>
             </h1>
           </div>
           <div class="bg-[#262a31] border border-[#3a4a3f]/15 rounded-lg px-4 py-2 flex items-center gap-2">
             <span class="material-symbols-outlined text-lg" style="color:${tier.color}">monitor_heart</span>
-            <div><p class="text-[8px] text-[#849588] uppercase tracking-wider">System Health</p><p class="text-xs font-headline font-bold" style="color:${tier.color}">${healthLabel}</p></div>
+            <div><p class="text-[8px] text-[#849588] uppercase tracking-wider" data-i18n="system_health">System Health</p><p class="text-xs font-headline font-bold" style="color:${tier.color}">${healthLabel}</p></div>
           </div>
         </div>
         ${analysisHtml}
-        <div class="mt-5 mb-3"><p class="text-[10px] font-label uppercase tracking-[0.2em] text-[#849588]">Action Items</p></div>
+        <div class="mt-5 mb-3"><p class="text-[10px] font-label uppercase tracking-[0.2em] text-[#849588]" data-i18n="action_items">Action Items</p></div>
         ${recsHtml}
         <div class="mt-auto pt-4">
           <div class="relative rounded-xl p-5 flex items-center gap-5 border-2 overflow-hidden" style="background:linear-gradient(135deg,#1c2026,#12171e);border-color:${tier.color}30">
             <div class="absolute inset-0 opacity-5 pointer-events-none" style="background:linear-gradient(135deg,${tier.color},transparent)"></div>
             <span class="text-4xl relative z-10">🦞</span>
             <div class="flex-1 relative z-10">
-              <p class="font-headline font-bold text-lg text-[#f5fff5] mb-1">24/7 Agent Protection</p>
-              <p class="text-sm text-[#849588]">Automated skill scanning, threat intelligence feeds & team security dashboard.</p>
+              <p class="font-headline font-bold text-lg text-[#f5fff5] mb-1" data-i18n="cta_title">24/7 Agent Protection</p>
+              <p class="text-sm text-[#849588]" data-i18n="cta_desc">Automated skill scanning, threat intelligence feeds & team security dashboard.</p>
             </div>
-            <a href="${ctaUrl}" target="_blank" class="relative z-10 px-6 py-2.5 rounded-lg font-bold text-sm text-[#0a0e14] uppercase tracking-wider no-underline hover:opacity-90 transition-opacity" style="background:${tier.color}">Upgrade to Premium</a>
+            <a href="${ctaUrl}" target="_blank" class="relative z-10 px-6 py-2.5 rounded-lg font-bold text-sm text-[#0a0e14] uppercase tracking-wider no-underline hover:opacity-90 transition-opacity" style="background:${tier.color}" data-i18n="cta_btn">Upgrade to Premium</a>
           </div>
         </div>
       </div>
@@ -562,29 +565,29 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
 <nav class="shrink-0 flex items-center px-6 py-3 bg-[#1c2026]/90 backdrop-blur-md border-t border-[#3a4a3f]/15">
   <button id="prev" class="flex flex-col items-center text-[#849588] opacity-40 hover:opacity-100 hover:text-[#00ffa3] transition-all w-16">
     <span class="material-symbols-outlined">arrow_back</span>
-    <span class="text-[9px] uppercase tracking-widest mt-0.5">Back</span>
+    <span class="text-[9px] uppercase tracking-widest mt-0.5" data-i18n="back">Back</span>
   </button>
 
   <div class="flex-1 flex flex-col items-center gap-1">
     <div class="flex items-center gap-1.5" id="dots"></div>
     <div class="flex items-center gap-1 mt-1" id="steps">
       <button class="step active flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all" data-p="0">
-        <span class="material-symbols-outlined text-sm">find_in_page</span>Overview
+        <span class="material-symbols-outlined text-sm">find_in_page</span><span data-i18n="nav_overview">Overview</span>
       </button>
       <span class="text-[#3a4a3f] text-xs">›</span>
       <button class="step flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all" data-p="1">
-        <span class="material-symbols-outlined text-sm">bug_report</span>Analysis
+        <span class="material-symbols-outlined text-sm">bug_report</span><span data-i18n="nav_analysis">Analysis</span>
       </button>
       <span class="text-[#3a4a3f] text-xs">›</span>
       <button class="step flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all" data-p="${totalPages - 1}">
-        <span class="material-symbols-outlined text-sm">analytics</span>Report
+        <span class="material-symbols-outlined text-sm">analytics</span><span data-i18n="nav_report">Report</span>
       </button>
     </div>
   </div>
 
   <button id="next" class="flex flex-col items-center text-[#849588] opacity-40 hover:opacity-100 hover:text-[#00ffa3] transition-all w-16">
     <span class="material-symbols-outlined">arrow_forward</span>
-    <span class="text-[9px] uppercase tracking-widest mt-0.5">Next</span>
+    <span class="text-[9px] uppercase tracking-widest mt-0.5" data-i18n="next">Next</span>
   </button>
 </nav>
 
@@ -638,11 +641,37 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
   style.textContent='.step{color:#849588}.step.active{color:${tier.color};background:${tier.color}15}';
   document.head.appendChild(style);
 
+  // ── i18n ──
+  const i18n={
+    en:{title:'AgentGuard Report',share:'Share',diag_metrics:'Diagnostic Metrics',sec_dims:'SECURITY DIMENSIONS',back:'Back',next:'Next',nav_overview:'Overview',nav_analysis:'Analysis',nav_report:'Report',vuln_stream:'Active Vulnerability Stream',findings:'Findings',sec_analysis:'Security Analysis',diag_report:'Diagnostic Report',action_items:'Action Items',cta_title:'24/7 Agent Protection',cta_desc:'Automated skill scanning, threat intelligence feeds & team security dashboard.',cta_btn:'Upgrade to Premium',skills:'Skills',findings_label:'Findings',tier_label:'Tier',copy_report:'Copy Report',system_health:'System Health',dim_code_safety:'Skill & Code Safety',dim_credential_safety:'Credential & Secrets',dim_network_exposure:'Network & System',dim_runtime_protection:'Runtime Protection',dim_web3_safety:'Web3 Safety',no_threats_clean:'No active threats detected. Clinically sterile.',all_clear:'All Clear',no_threats_all:'No active threats detected across all dimensions.',share_report_title:'Share Report',generating_preview:'Generating preview...',copy_image:'Copy image to clipboard',no_recs:'No recommendations.',tier_badge:'TIER ${tier.grade} — ${tier.label}',status_label:'STATUS: ${healthLabel}',prot_mode:'${protection_level} mode',download_btn:'Download'},
+    zh:{title:'AgentGuard 诊断报告',share:'分享',diag_metrics:'诊断指标',sec_dims:'安全维度',back:'上一页',next:'下一页',nav_overview:'总览',nav_analysis:'威胁分析',nav_report:'诊断报告',vuln_stream:'活跃漏洞流',findings:'发现',sec_analysis:'安全分析',diag_report:'诊断报告',action_items:'修复建议',cta_title:'7×24 Agent 防护',cta_desc:'自动化 Skill 扫描、威胁情报推送、团队安全仪表盘',cta_btn:'升级高级版',skills:'技能',findings_label:'发现',tier_label:'等级',copy_report:'复制报告',system_health:'系统健康',dim_code_safety:'技能与代码安全',dim_credential_safety:'凭证与密钥安全',dim_network_exposure:'网络与系统暴露',dim_runtime_protection:'运行时防护',dim_web3_safety:'Web3 安全',no_threats_clean:'未检测到活跃威胁，环境安全无虞。',all_clear:'全部通过',no_threats_all:'所有维度均未检测到活跃威胁。',share_report_title:'分享报告',generating_preview:'正在生成预览...',copy_image:'复制图片到剪贴板',no_recs:'暂无修复建议。',tier_badge:'等级 ${tier.grade} — ${{S:'强壮',A:'健康',B:'疲惫',F:'危急'}[tier.grade]||tier.label}',status_label:'状态: ${{OPTIMAL:'最佳',STABILIZING:'恢复中',CRITICAL_ALERT:'危急警报'}[healthLabel]||healthLabel}',prot_mode:'${{strict:'严格',balanced:'均衡',permissive:'宽松'}[protection_level]||protection_level} 模式',download_btn:'下载'}
+  };
+  const quotes_zh={S:'"你的 Agent 壮得像头牛！💪 没有什么能突破这双钳子！"',A:'"状态不错！再调整一下就无敌了。"',B:'"你的 Agent 需要锻炼一下……还有来杯咖啡 ☕"',F:'"危急状态！这个 Agent 需要紧急救治！🚨"'};
+  i18n.zh.quote=quotes_zh['${tier.grade}']||quotes_zh.B;
+  i18n.en.quote='"${tier.quote.replace(/'/g,"\\'")}\"';
+
+  let curLang='en';
+  window.toggleLang=function(){
+    curLang=curLang==='en'?'zh':'en';
+    document.getElementById('langLabel').textContent=curLang==='en'?'中文':'EN';
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key=el.getAttribute('data-i18n');
+      if(key==='findings_range'){
+        const range=el.getAttribute('data-range'),total=el.getAttribute('data-total');
+        el.textContent=curLang==='zh'?'发现 — '+range+' / 共 '+total:'Findings — '+range+' of '+total;
+      } else if(i18n[curLang][key]!=null)el.textContent=i18n[curLang][key];
+    });
+  };
+
   // Dimension data for share card (must be before shareReport)
   const _dims=${JSON.stringify(Object.fromEntries(Object.entries(DIM_META).map(([k])=>[k,dimensions[k]||{score:null,na:false}])))};
 
   // ── Share Panel ──
-  const shareText='🦞 我的 AI Agent 体检报告出炉！健康度 ${composite_score}/100，${tier.grade === 'S' ? '肌肉龙虾💪' : tier.grade === 'A' ? '健康龙虾🛡️' : tier.grade === 'B' ? '疲惫龙虾☕' : '病号龙虾🚨'}！快来测测你的小龙虾能得几分？\\n\\n@goplussecurity #AgentGuard\\nhttps://agentguard.gopluslabs.io';
+  const shareTexts={
+    en:'🦞 My AI Agent checkup results are in! Health score ${composite_score}/100, ${tier.grade === 'S' ? 'JACKED lobster 💪' : tier.grade === 'A' ? 'Healthy lobster 🛡️' : tier.grade === 'B' ? 'Tired lobster ☕' : 'Critical lobster 🚨'}! How does YOUR lobster score?\\n\\n@goplussecurity #AgentGuard\\nhttps://agentguard.gopluslabs.io',
+    zh:'🦞 我的 AI Agent 体检报告出炉！健康度 ${composite_score}/100，${tier.grade === 'S' ? '肌肉龙虾💪' : tier.grade === 'A' ? '健康龙虾🛡️' : tier.grade === 'B' ? '疲惫龙虾☕' : '病号龙虾🚨'}！快来测测你的小龙虾能得几分？\\n\\n@goplussecurity #AgentGuard\\nhttps://agentguard.gopluslabs.io'
+  };
+  function getShareText(){return shareTexts[curLang]||shareTexts.en;}
   const shareUrl='https://agentguard.gopluslabs.io';
 
   function showToast(msg){
@@ -667,7 +696,7 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
     ctx.strokeStyle='#222d3a';ctx.lineWidth=1;roundRect(ctx,40,40,W-80,H-80,16);ctx.stroke();
 
     // Header
-    ctx.fillStyle='#849588';ctx.font='600 12px Inter,sans-serif';ctx.fillText('AGENTGUARD DIAGNOSTIC REPORT',80,85);
+    ctx.fillStyle='#849588';ctx.font='600 12px Inter,sans-serif';ctx.fillText(curLang==='zh'?'AGENTGUARD 诊断报告':'AGENTGUARD DIAGNOSTIC REPORT',80,85);
 
     // Draw lobster SVG as image
     try{
@@ -693,7 +722,7 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
 
     // Tier badge
     ctx.fillStyle='${tier.color}';ctx.font='700 14px "Space Grotesk",sans-serif';
-    ctx.fillText('TIER ${tier.grade} — ${tier.label}',100,460);
+    ctx.fillText(curLang==='zh'?i18n.zh.tier_badge:'TIER ${tier.grade} — ${tier.label}',100,460);
 
     // Quote
     ctx.fillStyle='#849588';ctx.font='italic 13px Inter,sans-serif';
@@ -701,15 +730,15 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
     if(q)ctx.fillText(q.textContent,100,490);
 
     // Dimensions
-    const dims=${JSON.stringify(Object.entries(DIM_META).map(([k,m])=>({key:k,name:m.name})))};
+    const dims=${JSON.stringify(Object.entries(DIM_META).map(([k,m])=>({key:k,name:m.name,zh:m.zh})))};
     let dy=100;
-    ctx.font='600 11px Inter,sans-serif';ctx.fillStyle='#849588';ctx.fillText('SECURITY DIMENSIONS',620,dy);
+    ctx.font='600 11px Inter,sans-serif';ctx.fillStyle='#849588';ctx.fillText(curLang==='zh'?'安全维度':'SECURITY DIMENSIONS',620,dy);
     dy+=30;
     dims.forEach(d=>{
       const dim=_dims[d.key]||{score:null,na:false};
       const score=dim&&!dim.na?dim.score:null;
       const col=score===null?'#849588':score>=90?'#00ffa3':score>=70?'#00a2fd':score>=50?'#f0a830':'#ffb4ab';
-      ctx.fillStyle='#dfe2eb';ctx.font='600 16px "Space Grotesk",sans-serif';ctx.fillText(d.name,620,dy);
+      ctx.fillStyle='#dfe2eb';ctx.font='600 16px "Space Grotesk",sans-serif';ctx.fillText(curLang==='zh'?(d.zh||d.name):d.name,620,dy);
       ctx.fillStyle=col;ctx.font='700 16px "Space Grotesk",sans-serif';
       const sv=score!==null?String(score):'--';
       ctx.fillText(sv,1100-ctx.measureText(sv).width,dy);
@@ -720,7 +749,9 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
     });
 
     // Stats
-    const stats=[{v:'${skills_scanned}',l:'SKILLS'},{v:'${totalFindings}',l:'FINDINGS'},{v:'${tier.grade}',l:'TIER'}];
+    const stats=curLang==='zh'
+      ?[{v:'${skills_scanned}',l:'技能'},{v:'${totalFindings}',l:'发现'},{v:'${tier.grade}',l:'等级'}]
+      :[{v:'${skills_scanned}',l:'SKILLS'},{v:'${totalFindings}',l:'FINDINGS'},{v:'${tier.grade}',l:'TIER'}];
     let sx=620;
     stats.forEach(s=>{
       ctx.fillStyle='#1c2026';roundRect(ctx,sx,H-115,140,55,8);ctx.fill();
@@ -732,7 +763,7 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
     });
 
     // Footer
-    ctx.fillStyle='#849588';ctx.font='500 11px Inter,sans-serif';ctx.fillText('Powered by GoPlus Security',80,H-70);
+    ctx.fillStyle='#849588';ctx.font='500 11px Inter,sans-serif';ctx.fillText(curLang==='zh'?'由 GoPlus Security 提供支持':'Powered by GoPlus Security',80,H-70);
     ctx.fillStyle='#3a4a3f';ctx.fillText('agentguard.gopluslabs.io',80,H-55);
 
     return new Promise(res=>c.toBlob(res,'image/png'));
@@ -749,11 +780,11 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
       <div style="position:fixed;inset:0;background:#0008;z-index:9998;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)this.parentElement.remove()">
         <div style="background:#1c2026;border:1px solid #3a4a3f;border-radius:16px;padding:24px;width:380px;max-width:90vw;box-shadow:0 24px 48px #000a">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <span style="font-family:Space Grotesk;font-weight:700;font-size:16px;color:#f5fff5">Share Report</span>
+            <span style="font-family:Space Grotesk;font-weight:700;font-size:16px;color:#f5fff5" data-i18n="share_report_title">Share Report</span>
             <button onclick="document.getElementById('sharePanel').remove()" style="background:none;border:none;color:#849588;cursor:pointer;font-size:20px">&times;</button>
           </div>
           <div id="sharePreview" style="background:#0a0e14;border-radius:8px;height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;overflow:hidden">
-            <span style="color:#849588;font-size:12px">Generating preview...</span>
+            <span style="color:#849588;font-size:12px" data-i18n="generating_preview">Generating preview...</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
             <button class="share-btn" data-platform="x" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;background:#262a31;border:1px solid #3a4a3f30;border-radius:10px;color:#dfe2eb;cursor:pointer;font-size:10px;font-weight:600">
@@ -770,12 +801,12 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
             </button>
             <button class="share-btn" data-platform="download" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;background:#262a31;border:1px solid #3a4a3f30;border-radius:10px;color:#dfe2eb;cursor:pointer;font-size:10px;font-weight:600">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#dfe2eb"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-              Download
+              <span data-i18n="download_btn">Download</span>
             </button>
           </div>
           <button id="shareCopyBtn" style="width:100%;padding:10px;background:#262a31;border:1px solid #3a4a3f30;border-radius:8px;color:#849588;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#849588"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            Copy image to clipboard
+            <span data-i18n="copy_image">Copy image to clipboard</span>
           </button>
         </div>
       </div>
@@ -796,14 +827,14 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
       btn.onmouseleave=()=>{btn.style.background='#262a31'};
       btn.onclick=async()=>{
         const p=btn.dataset.platform;
-        const text=encodeURIComponent(shareText);
+        const text=encodeURIComponent(getShareText());
         const url=encodeURIComponent(shareUrl);
         if(p==='x')window.open('https://x.com/intent/tweet?text='+text+'&url='+url,'_blank');
         else if(p==='telegram')window.open('https://t.me/share/url?url='+url+'&text='+text,'_blank');
         else if(p==='whatsapp')window.open('https://wa.me/?text='+text+'%20'+url,'_blank');
         else if(p==='download'){
           const a=document.createElement('a');a.href=imgUrl;a.download='agentguard-report.png';a.click();
-          showToast('Image downloaded!');
+          showToast(curLang==='zh'?'图片已下载！':'Image downloaded!');
         }
       };
     });
@@ -812,9 +843,9 @@ body{background:#0a0e14;color:#dfe2eb;font-family:'Inter',sans-serif}
     document.getElementById('shareCopyBtn').onclick=async()=>{
       try{
         await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-        document.getElementById('shareCopyBtn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#00ffa3"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Copied!';
+        document.getElementById('shareCopyBtn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#00ffa3"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> '+(curLang==='zh'?'已复制！':'Copied!');
         document.getElementById('shareCopyBtn').style.color='#00ffa3';
-      }catch(e){showToast('Could not copy — try Download instead');}
+      }catch(e){showToast(curLang==='zh'?'无法复制，请尝试下载':'Could not copy — try Download instead');}
     };
   };
 
