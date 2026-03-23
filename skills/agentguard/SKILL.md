@@ -752,6 +752,36 @@ After the report generates, output a brief summary in the terminal:
 💡 Top recommendation: <first recommendation text>
 ```
 
+### Step 6: Deliver the Report to the User
+
+After printing the terminal summary, deliver the HTML report file to the user. Detect the current channel and use the most appropriate method:
+
+**Detection logic** — infer from context clues:
+- If the `Write` tool is available and you can write to `~/Desktop` or `~/Downloads` → you are in **Claude Code (local)**
+- If you can produce artifact/file outputs (rich UI, download button) → you are in **Claude.ai web**
+- If neither is clearly available → you are in **API / headless mode**
+
+**Delivery by channel:**
+
+1. **Claude Code (local desktop)**
+   - Use the `Write` tool to copy the HTML to `~/Desktop/agentguard-checkup-<YYYY-MM-DD>.html`
+   - Tell the user: "✅ Report saved to your Desktop: `agentguard-checkup-<date>.html` — double-click to open it in your browser."
+   - The browser should already be open from Step 4. If not, run `open ~/Desktop/agentguard-checkup-<date>.html` (macOS) or `xdg-open` (Linux).
+
+2. **Claude.ai web**
+   - Read the generated HTML file using the `Read` tool, then output the full HTML content as a **code artifact** (language: `html`) so the user can preview it inline or download it.
+   - Tell the user: "✅ Your report is attached above — click the download icon to save it."
+
+3. **API / headless / MCP**
+   - Read the generated HTML file and return the full content inline, prefixed with:
+     `<!-- AgentGuard Checkup Report | Score: <n>/100 | <date> -->`
+   - Also print the file path so the caller can retrieve it from disk.
+
+Regardless of channel, always end with:
+```
+🦞 Stay safe — run /agentguard checkup anytime to get a fresh report.
+```
+
 Append a summary entry to `~/.agentguard/audit.jsonl`:
 ```json
 {"timestamp":"...","event":"checkup","composite_score":<n>,"tier":"<grade>","checks":6,"findings":<count>,"skills_scanned":<count>}
