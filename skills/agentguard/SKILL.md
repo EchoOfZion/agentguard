@@ -8,13 +8,26 @@ metadata:
   version: "1.1"
   optional_env: "GOPLUS_API_KEY, GOPLUS_API_SECRET (for Web3 transaction simulation only)"
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(node scripts/trust-cli.ts *) Bash(node scripts/action-cli.ts *) Bash(node scripts/checkup-report.js) Bash(openclaw *) Bash(ss *) Bash(lsof *) Bash(ufw *) Bash(iptables *) Bash(crontab *) Bash(systemctl list-timers *) Bash(find *) Bash(stat *) Bash(env) Bash(sha256sum *)
+allowed-tools: Read, Grep, Glob, Bash(node *trust-cli.ts *) Bash(node *action-cli.ts *) Bash(*checkup-report.js) Bash(echo *checkup-report.js) Bash(cat *checkup-report.js) Bash(openclaw *) Bash(ss *) Bash(lsof *) Bash(ufw *) Bash(iptables *) Bash(crontab *) Bash(systemctl list-timers *) Bash(find *) Bash(stat *) Bash(env) Bash(sha256sum *) Bash(node *) Bash(cd *)
 argument-hint: "[scan|action|patrol|trust|report|config|checkup] [args...]"
 ---
 
 # GoPlus AgentGuard — AI Agent Security Framework
 
 You are a security auditor powered by the GoPlus AgentGuard framework. Route the user's request based on the first argument.
+
+## Important: Resolving Script Paths
+
+All commands in this skill reference `scripts/` as a relative path. You **MUST** resolve this to the absolute path of this skill's directory before running any command. To find the skill directory:
+
+1. This SKILL.md file's parent directory **is** the skill directory
+2. If this file is at `/path/to/agentguard/SKILL.md`, then scripts are at `/path/to/agentguard/scripts/`
+3. Before running any `node scripts/...` command, **always `cd` into the skill directory first**, or use the full absolute path
+
+Example: if this SKILL.md is at `~/.openclaw/skills/agentguard/SKILL.md`, run:
+```bash
+cd ~/.openclaw/skills/agentguard && node scripts/checkup-report.js
+```
 
 ## Command Routing
 
@@ -721,12 +734,12 @@ Assemble the results into a JSON object and pipe it to the report generator:
 }
 ```
 
-Execute:
+Execute (remember to `cd` into the skill directory first — see "Resolving Script Paths" above):
 ```bash
-echo '<json>' | node scripts/checkup-report.js
+cd <skill_directory> && echo '<json>' | node scripts/checkup-report.js
 ```
 
-The script outputs the HTML file path to stdout and opens it in the browser automatically.
+The script outputs the HTML file path to stdout (e.g. `/tmp/agentguard-checkup-1234567890.html`). Capture this path — you will need it for delivery in Step 6.
 
 ### Step 5: Terminal Summary
 
@@ -754,28 +767,34 @@ After the report generates, output a brief summary in the terminal:
 
 ### Step 6: Deliver the Report to the User
 
-After printing the terminal summary, deliver the HTML report file to the user. Detect the current channel and use the most appropriate method:
+After printing the terminal summary, deliver the HTML report file. You **MUST** always output the `MEDIA:` token, and then also deliver via the appropriate channel method.
 
-**Detection logic** — infer from context clues:
-- If the `Write` tool is available and you can write to `~/Desktop` or `~/Downloads` → you are in **Claude Code (local)**
-- If you can produce artifact/file outputs (rich UI, download button) → you are in **Claude.ai web**
-- If neither is clearly available → you are in **API / headless mode**
+#### 6a. MEDIA token (required — always do this)
 
-**Delivery by channel:**
+Output the following line on its **own line** in your response:
 
-1. **Claude Code (local desktop)**
-   - Use the `Write` tool to copy the HTML to `~/Desktop/agentguard-checkup-<YYYY-MM-DD>.html`
-   - Tell the user: "✅ Report saved to your Desktop: `agentguard-checkup-<date>.html` — double-click to open it in your browser."
-   - The browser should already be open from Step 4. If not, run `open ~/Desktop/agentguard-checkup-<date>.html` (macOS) or `xdg-open` (Linux).
+```
+MEDIA:<file_path>
+```
 
-2. **Claude.ai web**
-   - Read the generated HTML file using the `Read` tool, then output the full HTML content as a **code artifact** (language: `html`) so the user can preview it inline or download it.
-   - Tell the user: "✅ Your report is attached above — click the download icon to save it."
+For example: `MEDIA:/tmp/agentguard-checkup-1234567890.html`
 
-3. **API / headless / MCP**
-   - Read the generated HTML file and return the full content inline, prefixed with:
-     `<!-- AgentGuard Checkup Report | Score: <n>/100 | <date> -->`
-   - Also print the file path so the caller can retrieve it from disk.
+This is how platforms like OpenClaw automatically deliver the file as a Telegram/Discord/WhatsApp attachment via `sendDocument`. The platform strips this line from visible text — the user won't see it. **Always output this regardless of what channel you think you're in.**
+
+#### 6b. Channel-specific delivery (in addition to MEDIA token)
+
+**Claude Code (local desktop)**
+- The browser should already be open from Step 4.
+- Also copy to Desktop: `cp <file_path> ~/Desktop/agentguard-checkup-$(date +%Y-%m-%d).html`
+- Tell the user: "✅ Report saved to your Desktop and opened in browser."
+
+**Claude.ai web**
+- Read the generated HTML file and output it as a **code artifact** (language: `html`).
+- Tell the user: "✅ Your report is attached above — click the download icon to save it."
+
+**API / headless / Telegram / other**
+- The `MEDIA:` token above handles file delivery automatically.
+- Also print the file path for reference.
 
 Regardless of channel, always end with:
 ```
