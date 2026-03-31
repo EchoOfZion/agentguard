@@ -43,15 +43,15 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.0.0",
+    "@modelcontextprotocol/sdk": "1.29.0",
     "axios": "1.14.0",
-    "commander": "12.0.0",
-    "glob": "10.3.10",
-    "zod": "3.25.32"
+    "commander": "12.1.0",
+    "glob": "13.0.6",
+    "zod": "3.25.76"
   },
   "devDependencies": {
-    "@types/node": "20.11.24",
-    "typescript": "5.3.3"
+    "@types/node": "22.19.15",
+    "typescript": "5.7.3"
   },
   "homepage": "https://github.com/GoPlusSecurity/agentguard#readme",
   "bugs": {
