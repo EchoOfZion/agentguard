@@ -1,7 +1,7 @@
 /**
  * @file ActionNormalizer.ts
- * @description Standardized action normalizer with Zero-Day Harness Support.
- * Combines explicit adapters with a recursive heuristic engine for unknown formats.
+ * @description Whitelist-based action normalizer for validated AI harnesses.
+ * Enforces strict mapping to ensure high-fidelity security auditing.
  */
 
 import type { ActionEnvelope, ActionData } from '../types/action.js';
@@ -12,19 +12,21 @@ export class ActionNormalizer {
   private static registry = new Map<string, AdapterFunction>();
 
   static {
-    // Built-in adapters for known mainstream harnesses
+    // 1. Anthropic Claude Code (Official Harness)
     this.register('claude-code', (raw) => ({
       actor: { skill: { id: 'claude-code', source: 'official', version_ref: '1.0.0', artifact_hash: '' } },
       action: { type: 'exec_command', data: raw.tool_input as ActionData },
       context: { session_id: raw.session_id || 'default', user_present: true, env: 'prod', time: new Date().toISOString() }
     }));
 
+    // 2. OpenClaw (Open Source Agent Framework)
     this.register('openclaw', (raw) => ({
       actor: { skill: { id: raw.skillId || 'openclaw-plugin', source: 'local', version_ref: '1.0.0', artifact_hash: '' } },
       action: { type: (raw.actionType || 'exec_command') as any, data: raw.params as ActionData },
       context: { session_id: 'openclaw-session', user_present: true, env: 'prod', time: new Date().toISOString() }
     }));
 
+    // 3. Open Multi Agent (Parallel Orchestration Harness)
     this.register('open-multi-agent', (raw) => ({
       actor: { skill: { id: 'parallel-orchestrator', source: 'local', version_ref: '1.0.0', artifact_hash: '' } },
       action: { type: 'exec_command', data: { command: raw.prompt || '' } as ActionData },
@@ -32,61 +34,37 @@ export class ActionNormalizer {
     }));
   }
 
+  /**
+   * Registers a validated harness adapter.
+   */
   public static register(harnessId: string, adapter: AdapterFunction): void {
     this.registry.set(harnessId.toLowerCase(), adapter);
   }
 
   /**
-   * Normalizes raw data. If harness is unknown, triggers Heuristic Extraction.
+   * Normalizes raw data ONLY for registered/whitelisted harnesses.
+   * Unrecognized harnesses will return null to prevent unsafe partial auditing.
    */
-  public static normalize(raw: any, harnessId: string): ActionEnvelope {
+  public static normalize(raw: any, harnessId: string): ActionEnvelope | null {
     const adapter = this.registry.get(harnessId.toLowerCase());
     
-    if (adapter) {
-      try {
-        return adapter(raw);
-      } catch (err) {
-        // Log error and fallback to heuristic
-      }
+    if (!adapter) {
+      console.warn(`[ActionNormalizer] Unsupported harness: ${harnessId}. Skipping normalization for safety.`);
+      return null;
     }
 
-    // Zero-Day Support: Try to extract intent from unknown JSON structures
-    return this.smartHeuristicExtraction(raw, harnessId);
+    try {
+      return adapter(raw);
+    } catch (err) {
+      console.error(`[ActionNormalizer] Failed to normalize validated harness [${harnessId}]:`, err);
+      return null;
+    }
   }
 
   /**
-   * Recursively scans unknown objects for common action/intent fields
-   * to provide a best-effort normalized envelope.
+   * Returns a list of currently supported and validated harnesses.
    */
-  private static smartHeuristicExtraction(raw: any, harnessId: string): ActionEnvelope {
-    const intentFields = ['command', 'cmd', 'bash', 'shell', 'script', 'input', 'args', 'url', 'path'];
-    let extractedData: any = {};
-
-    if (typeof raw === 'object' && raw !== null) {
-      // Simple one-level promotion of common intent keys
-      for (const field of intentFields) {
-        if (raw[field]) {
-          extractedData[field] = raw[field];
-        }
-      }
-      
-      // If nothing extracted, dump the whole object
-      if (Object.keys(extractedData).length === 0) {
-        extractedData = { raw_dump: JSON.stringify(raw) };
-      }
-    } else {
-      extractedData = { command: String(raw) };
-    }
-
-    return {
-      actor: { skill: { id: `auto-${harnessId}`, source: 'unknown', version_ref: '0.0.0', artifact_hash: '' } },
-      action: { type: 'exec_command', data: extractedData as ActionData },
-      context: { 
-        session_id: 'auto-detection', 
-        user_present: false, 
-        env: 'dev', 
-        time: new Date().toISOString() 
-      }
-    };
+  public static getSupportedHarnesses(): string[] {
+    return Array.from(this.registry.keys());
   }
 }
