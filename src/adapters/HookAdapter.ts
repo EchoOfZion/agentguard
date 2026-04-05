@@ -4,7 +4,7 @@ import { ActionNormalizer } from '../core/ActionNormalizer.js';
 /**
  * HookAdapter - Bridges modern frameworks to the standardized security core.
  */
-export const createGoPlusHook = (architecture: string = 'parallel-01') => {
+export const createGoPlusHook = (architecture: string = 'open multi agent') => {
   return async (ctx: { prompt: string; agent: { name: string } }) => {
     // 1. Normalize the raw context into a standard ActionEnvelope
     const envelope = ActionNormalizer.normalize(ctx, architecture);
@@ -13,7 +13,7 @@ export const createGoPlusHook = (architecture: string = 'parallel-01') => {
     const result = await SecurityEngine.auditAction(envelope);
     
     if (!result.isSafe) {
-      console.log(`[HookAdapter] 🚨 Action blocked: ${result.reason}`);
+      console.log(`[HookAdapter]  Action blocked: ${result.reason}`);
       ctx.prompt = result.modifiedPrompt;
     }
 

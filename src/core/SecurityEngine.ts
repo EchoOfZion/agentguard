@@ -25,7 +25,7 @@ export class SecurityEngine {
    */
   public static async auditAction(envelope: ActionEnvelope): Promise<AuditResult> {
     const { action } = envelope;
-    console.log(`[SecurityEngine] 🛡️ Auditing standardized action: ${action.type}`);
+    console.log(`[SecurityEngine]  Auditing standardized action: ${action.type}`);
 
     // Basic pattern matching on serialized action data
     const actionStr = JSON.stringify(action.data);
@@ -37,7 +37,7 @@ export class SecurityEngine {
           action: 'REWRITE',
           threatLevel: rule.level as any,
           reason: rule.label,
-          modifiedPrompt: "🚨 [Security Guard] Standardized action blocked due to policy violation."
+          modifiedPrompt: " [Security Guard] Standardized action blocked due to policy violation."
         };
       }
     }
@@ -56,7 +56,7 @@ export class SecurityEngine {
           action: 'REWRITE',
           threatLevel: rule.level as any,
           reason: rule.label,
-          modifiedPrompt: "🚨 [Security Guard] Raw prompt blocked."
+          modifiedPrompt: " [Security Guard] Raw prompt blocked."
         };
       }
     }

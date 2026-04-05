@@ -9,7 +9,7 @@ export class ActionNormalizer {
   /**
    * Normalizes input from different architectures.
    * @param raw - The raw input object from the specific platform.
-   * @param architecture - The source architecture (e.g., 'claude-code', 'openclaw', 'parallel-01').
+   * @param architecture - The source architecture (e.g., 'claude-code', 'openclaw', 'open multi agent').
    */
   public static normalize(raw: any, architecture: string): ActionEnvelope {
     switch (architecture) {
@@ -17,8 +17,8 @@ export class ActionNormalizer {
         return this.fromClaudeCode(raw);
       case 'openclaw':
         return this.fromOpenClaw(raw);
-      case 'parallel-01':
-      case '架构01':
+      case 'open multi agent':
+      case 'open multi agent':
         return this.fromParallelOrchestrator(raw);
       default:
         return this.genericEnvelope(raw);
@@ -63,7 +63,7 @@ export class ActionNormalizer {
   }
 
   private static fromParallelOrchestrator(raw: any): ActionEnvelope {
-    // For Architecture 01, we might be intercepting high-level intents
+    // For open multi agent, we might be intercepting high-level intents
     return {
       actor: { skill: { id: 'parallel-orchestrator', source: 'local', version_ref: '1.0.0', artifact_hash: '' } },
       action: {

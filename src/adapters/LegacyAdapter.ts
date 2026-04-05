@@ -1,4 +1,4 @@
-import { SecurityEngine } from '../core/engine.js';
+import { SecurityEngine } from '../core/SecurityEngine.js';
 
 /**
  * Adapter for legacy process-based orchestration (e.g. sessions_spawn).
