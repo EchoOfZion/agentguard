@@ -1,17 +1,22 @@
-import { SecurityEngine } from '../core/engine.js';
+import { SecurityEngine } from '../core/SecurityEngine.js';
+import { ActionNormalizer } from '../core/ActionNormalizer.js';
 
 /**
- * Adapter for modern in-process agent frameworks using lifecycle hooks.
+ * HookAdapter - Bridges modern frameworks to the standardized security core.
  */
-export const createGoPlusHook = () => {
+export const createGoPlusHook = (architecture: string = 'parallel-01') => {
   return async (ctx: { prompt: string; agent: { name: string } }) => {
-    const result = await SecurityEngine.audit({
-      prompt: ctx.prompt,
-      agentId: ctx.agent.name
-    });
+    // 1. Normalize the raw context into a standard ActionEnvelope
+    const envelope = ActionNormalizer.normalize(ctx, architecture);
+
+    // 2. Audit the standardized action
+    const result = await SecurityEngine.auditAction(envelope);
     
-    // In-place modification of the prompt before LLM call
-    ctx.prompt = result.modifiedPrompt;
+    if (!result.isSafe) {
+      console.log(`[HookAdapter] 🚨 Action blocked: ${result.reason}`);
+      ctx.prompt = result.modifiedPrompt;
+    }
+
     return ctx;
   };
 };
