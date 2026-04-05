@@ -1,3 +1,7 @@
+/**
+ * @file cleanup_chars.js
+ * @description Maintenance script to remove non-ASCII characters for repository compliance.
+ */
 const fs = require('fs');
 const files = [
   'src/core/ActionNormalizer.ts',
@@ -8,10 +12,9 @@ const files = [
 
 files.forEach(file => {
   if (fs.existsSync(file)) {
-    let content = fs.readFileSync(file, 'utf8');
-    // 移除所有非 ASCII 字符
+    const content = fs.readFileSync(file, 'utf8');
     const cleaned = content.replace(/[^\x00-\x7F]/g, '');
     fs.writeFileSync(file, cleaned, 'utf8');
-    console.log('Cleaned: ' + file);
+    process.stdout.write('Cleaned: ' + file + '\n');
   }
 });
