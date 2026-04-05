@@ -16,4 +16,5 @@ export {
   writeAuditLog,
   getSkillTrustPolicy,
   isActionAllowedByCapabilities,
+  containsProtoKeys,
 } from './common.js';
