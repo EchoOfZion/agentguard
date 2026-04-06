@@ -26,11 +26,27 @@ export interface StorageOptions {
 export class RegistryStorage {
   private filePath: string;
   private data: RegistryData | null = null;
+  private writeLock: Promise<void> = Promise.resolve();
 
   constructor(options: StorageOptions = {}) {
     this.filePath =
       options.filePath ||
       path.join(homedir(), '.agentguard', 'registry.json');
+  }
+
+  /**
+   * Serialize writes to prevent concurrent file corruption
+   */
+  private async withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+    const prev = this.writeLock;
+    let resolve!: () => void;
+    this.writeLock = new Promise<void>((r) => { resolve = r; });
+    try {
+      await prev;
+      return await fn();
+    } finally {
+      resolve();
+    }
   }
 
   /**
@@ -74,19 +90,24 @@ export class RegistryStorage {
    * Save registry data to file
    */
   async save(): Promise<void> {
-    if (!this.data) {
-      throw new Error('No data to save');
-    }
+    return this.withWriteLock(async () => {
+      if (!this.data) {
+        throw new Error('No data to save');
+      }
 
-    await this.ensureDirectory();
+      await this.ensureDirectory();
 
-    this.data.updated_at = new Date().toISOString();
+      this.data.updated_at = new Date().toISOString();
 
-    await fs.writeFile(
-      this.filePath,
-      JSON.stringify(this.data, null, 2),
-      { encoding: 'utf-8', mode: 0o600 }
-    );
+      // Atomic write: write to temp file then rename
+      const tmpPath = `${this.filePath}.tmp`;
+      await fs.writeFile(
+        tmpPath,
+        JSON.stringify(this.data, null, 2),
+        { encoding: 'utf-8', mode: 0o600 }
+      );
+      await fs.rename(tmpPath, this.filePath);
+    });
   }
 
   /**
