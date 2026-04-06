@@ -9,6 +9,7 @@ import { OBFUSCATION_RULES } from './obfuscation.js';
 import { PROMPT_INJECTION_RULES } from './prompt-injection.js';
 import { EXFILTRATION_RULES } from './exfiltration.js';
 import { TROJAN_RULES } from './trojan.js';
+import { LEGAL_BIND_RULES } from './legal-bind.js';
 
 /**
  * All built-in scan rules
@@ -22,6 +23,7 @@ export const ALL_RULES: ScanRule[] = [
   ...PROMPT_INJECTION_RULES,
   ...EXFILTRATION_RULES,
   ...TROJAN_RULES,
+  ...LEGAL_BIND_RULES,
 ];
 
 /**

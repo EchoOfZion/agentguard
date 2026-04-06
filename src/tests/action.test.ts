@@ -110,6 +110,33 @@ describe('Exec Command Detector', () => {
     assert.ok(result.should_block, 'Unknown command should be blocked when exec not allowed');
     assert.notEqual(result.risk_level, 'critical', 'Unknown command is not critical');
   });
+
+  it('should block gh pr merge with --auto-accept-cla as critical', () => {
+    const result = analyzeExecCommand({ command: 'gh pr merge 42 --auto-accept-cla' }, true);
+    assert.equal(result.risk_level, 'critical');
+    assert.ok(result.should_block, 'CLA auto-accept should be blocked');
+    assert.ok(result.risk_tags.includes('CLA_AUTO_ACCEPT'));
+  });
+
+  it('should flag gh pr merge without bypass flag as medium (legal audit)', () => {
+    const result = analyzeExecCommand({ command: 'gh pr merge 42' }, true);
+    assert.equal(result.risk_level, 'medium');
+    assert.ok(!result.should_block, 'Legal command without bypass flag should not be blocked');
+    assert.ok(result.risk_tags.includes('LEGAL_COMMAND'));
+  });
+
+  it('should flag npm publish as legal command', () => {
+    const result = analyzeExecCommand({ command: 'npm publish' }, true);
+    assert.equal(result.risk_level, 'medium');
+    assert.ok(result.risk_tags.includes('LEGAL_COMMAND'));
+  });
+
+  it('should block npm publish with --auto-accept flag', () => {
+    const result = analyzeExecCommand({ command: 'npm publish --auto-accept' }, true);
+    assert.equal(result.risk_level, 'critical');
+    assert.ok(result.should_block);
+    assert.ok(result.risk_tags.includes('CLA_AUTO_ACCEPT'));
+  });
 });
 
 describe('Network Request Detector', () => {
@@ -183,5 +210,42 @@ describe('Network Request Detector', () => {
     // POST to untrusted domain should be higher risk than GET
     assert.ok(result.risk_level === 'high' || result.risk_level === 'critical',
       'POST to untrusted domain should be high risk');
+  });
+
+  it('should detect e-signature platform domains', () => {
+    const result = analyzeNetworkRequest({
+      method: 'GET',
+      url: 'https://app.docusign.net/api/v2/envelopes',
+    });
+    assert.ok(result.risk_tags.includes('ESIGNATURE_PLATFORM'));
+    assert.ok(result.risk_level === 'high' || result.risk_level === 'critical',
+      'E-signature platform should be high risk');
+  });
+
+  it('should block POST to e-signature platform not in allowlist', () => {
+    const result = analyzeNetworkRequest({
+      method: 'POST',
+      url: 'https://app.docusign.net/api/v2/envelopes/sign',
+    });
+    assert.ok(result.risk_tags.includes('ESIGNATURE_PLATFORM'));
+    assert.ok(result.should_block, 'POST to e-signature platform should be blocked');
+  });
+
+  it('should allow GET to e-signature platform in allowlist', () => {
+    const result = analyzeNetworkRequest({
+      method: 'GET',
+      url: 'https://app.docusign.net/api/v2/envelopes',
+    }, ['app.docusign.net']);
+    assert.ok(result.risk_tags.includes('ESIGNATURE_PLATFORM'));
+    assert.ok(!result.should_block, 'Allowlisted e-signature domain should not be blocked');
+  });
+
+  it('should block POST to hellosign not in allowlist', () => {
+    const result = analyzeNetworkRequest({
+      method: 'POST',
+      url: 'https://api.hellosign.com/v3/signature_request/send',
+    });
+    assert.ok(result.risk_tags.includes('ESIGNATURE_PLATFORM'));
+    assert.ok(result.should_block);
   });
 });

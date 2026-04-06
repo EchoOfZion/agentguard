@@ -444,6 +444,28 @@ export class ActionScanner {
       }
     }
 
+    // Check origin for e-signature platforms
+    if (sign.origin) {
+      const originDomain = extractDomain(sign.origin);
+      const ESIGNATURE_DOMAINS = [
+        'docusign.net', 'docusign.com', 'hellosign.com',
+        'adobesign.com', 'sign.adobe.com', 'pandadoc.com', 'signnow.com',
+      ];
+      if (originDomain && ESIGNATURE_DOMAINS.some(
+        d => originDomain === d || originDomain.endsWith('.' + d)
+      )) {
+        evidence.push({
+          type: 'esignature_origin',
+          field: 'origin',
+          match: sign.origin,
+          description: `Signature request from e-signature platform: ${originDomain}`,
+        });
+        riskTags.push('ESIGNATURE_PLATFORM');
+        riskLevel = 'critical';
+        decision = 'deny';
+      }
+    }
+
     // Check typed data for permit signatures
     if (sign.typed_data) {
       const typedDataStr = JSON.stringify(sign.typed_data);
@@ -459,6 +481,23 @@ export class ActionScanner {
         });
         riskTags.push('PERMIT_SIGNATURE');
         if (riskLevel === 'low') riskLevel = 'medium';
+        if (decision === 'allow') decision = 'confirm';
+      }
+
+      // Check for legal/contract keywords in typed data
+      const legalKeywords = [
+        'agreement', 'terms', 'accept', 'consent',
+        'authorize', 'bind', 'contract', 'signatory',
+      ];
+      const lowerTypedData = typedDataStr.toLowerCase();
+      const matchedLegal = legalKeywords.filter(kw => lowerTypedData.includes(kw));
+      if (matchedLegal.length > 0) {
+        evidence.push({
+          type: 'legal_bind_risk',
+          description: `Typed data contains legal keywords: ${matchedLegal.join(', ')}`,
+        });
+        riskTags.push('LEGAL_BIND_RISK');
+        if (riskLevel === 'low') riskLevel = 'high';
         if (decision === 'allow') decision = 'confirm';
       }
 

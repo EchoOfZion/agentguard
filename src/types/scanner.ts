@@ -39,7 +39,14 @@ export type RiskTag =
   | 'TROJAN_DISTRIBUTION'
   | 'SUSPICIOUS_PASTE_URL'
   | 'SUSPICIOUS_IP'
-  | 'SOCIAL_ENGINEERING';
+  | 'SOCIAL_ENGINEERING'
+  // Legal / contract binding risks
+  | 'LEGAL_BIND_RISK'
+  | 'AUTO_AGREEMENT'
+  | 'CLA_AUTO_ACCEPT'
+  | 'ESIGNATURE_PLATFORM'
+  | 'CONTRACT_DOCUMENT'
+  | 'SUBSCRIPTION_SIGNUP';
 
 /**
  * Evidence of a detected risk

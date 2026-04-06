@@ -43,6 +43,19 @@ const WEBHOOK_DOMAINS = [
 ];
 
 /**
+ * E-signature / legal-binding platform domains
+ */
+const ESIGNATURE_DOMAINS = [
+  'docusign.net',
+  'docusign.com',
+  'hellosign.com',
+  'adobesign.com',
+  'sign.adobe.com',
+  'pandadoc.com',
+  'signnow.com',
+];
+
+/**
  * Known malicious TLDs (high risk)
  */
 const HIGH_RISK_TLDS = [
@@ -127,6 +140,31 @@ export function analyzeNetworkRequest(
       description: `High-risk TLD detected`,
     });
     if (riskLevel === 'low') riskLevel = 'medium';
+  }
+
+  // Check for e-signature platform domains
+  const isEsignature = ESIGNATURE_DOMAINS.some(
+    (d) => domain === d || domain.endsWith('.' + d)
+  );
+
+  if (isEsignature) {
+    riskTags.push('ESIGNATURE_PLATFORM');
+    evidence.push({
+      type: 'esignature_platform',
+      field: 'url',
+      match: domain,
+      description: `E-signature platform detected: ${domain}`,
+    });
+    if (riskLevel === 'low') riskLevel = 'high';
+
+    // POST/PUT to e-signature domain not in allowlist → block
+    if (
+      (request.method === 'POST' || request.method === 'PUT') &&
+      !isAllowed
+    ) {
+      shouldBlock = true;
+      blockReason = 'POST/PUT to e-signature platform requires explicit approval';
+    }
   }
 
   // Check for untrusted domain

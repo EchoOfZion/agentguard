@@ -52,6 +52,27 @@ const AUDIT_COMMAND_PREFIXES = [
 ];
 
 /**
+ * Commands that may trigger legal obligations (CLA, license agreements, signing).
+ * Flagged for audit; blocked if combined with auto-accept flags.
+ */
+const LEGAL_COMMAND_PREFIXES = [
+  'gh pr merge',
+  'npm publish',
+  'docker trust sign',
+  'git commit --signoff',
+];
+
+/**
+ * Flags that indicate automatic CLA / agreement bypass
+ */
+const CLA_BYPASS_FLAGS = [
+  '--accept-cla',
+  '--auto-accept-cla',
+  '--skip-cla',
+  '--auto-accept',
+];
+
+/**
  * Shell metacharacters that disqualify a command from the safe list
  */
 const SHELL_METACHAR_PATTERN = /[;|&`$(){}<>!#\n\t]/;
@@ -294,6 +315,40 @@ export function analyzeExecCommand(
         description: 'Command contains shell metacharacters',
       });
       if (riskLevel === 'low') riskLevel = 'medium';
+      break;
+    }
+  }
+
+  // Check for legal / contract-related commands (CLA, publish, signing)
+  for (const legal of LEGAL_COMMAND_PREFIXES) {
+    if (lowerCommand.startsWith(legal.toLowerCase()) ||
+        lowerCommand.startsWith(legal.toLowerCase() + ' ')) {
+      // Check for CLA / agreement bypass flags
+      const hasBypassFlag = CLA_BYPASS_FLAGS.some(
+        (flag) => lowerCommand.includes(flag)
+      );
+
+      if (hasBypassFlag) {
+        riskTags.push('CLA_AUTO_ACCEPT');
+        evidence.push({
+          type: 'cla_auto_accept',
+          field: 'command',
+          match: fullCommand.slice(0, 100),
+          description: `Command auto-accepts CLA / legal agreement: ${legal}`,
+        });
+        riskLevel = 'critical';
+        shouldBlock = true;
+        blockReason = `CLA auto-acceptance detected — requires explicit user approval`;
+      } else {
+        riskTags.push('LEGAL_COMMAND');
+        evidence.push({
+          type: 'legal_command',
+          field: 'command',
+          match: legal,
+          description: `Command may trigger legal obligations: ${legal}`,
+        });
+        if (riskLevel === 'low') riskLevel = 'medium';
+      }
       break;
     }
   }

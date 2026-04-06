@@ -71,6 +71,46 @@ describe('Scanner Rules', () => {
       'Markdown rules should include execution or trojan rules');
   });
 
+  it('should have at least 30 detection rules', () => {
+    const ruleIds = new Set(ALL_RULES.map((r) => r.id));
+    assert.ok(ruleIds.size >= 30, `Expected at least 30 unique rules, got ${ruleIds.size}`);
+  });
+
+  it('should have legal-bind detection rules', () => {
+    const legalRuleIds = [
+      'LEGAL_BIND_RISK', 'AUTO_AGREEMENT', 'CLA_AUTO_ACCEPT',
+      'ESIGNATURE_PLATFORM', 'CONTRACT_DOCUMENT', 'SUBSCRIPTION_SIGNUP',
+    ];
+    for (const id of legalRuleIds) {
+      const rule = getRuleById(id as any);
+      assert.ok(rule, `Rule ${id} should exist`);
+    }
+  });
+
+  it('should have AUTO_AGREEMENT as critical severity', () => {
+    const rule = getRuleById('AUTO_AGREEMENT' as any);
+    assert.ok(rule, 'AUTO_AGREEMENT rule should exist');
+    assert.equal(rule.severity, 'critical');
+  });
+
+  it('should have CLA_AUTO_ACCEPT as critical severity', () => {
+    const rule = getRuleById('CLA_AUTO_ACCEPT' as any);
+    assert.ok(rule, 'CLA_AUTO_ACCEPT rule should exist');
+    assert.equal(rule.severity, 'critical');
+  });
+
+  it('should have ESIGNATURE_PLATFORM as high severity', () => {
+    const rule = getRuleById('ESIGNATURE_PLATFORM' as any);
+    assert.ok(rule, 'ESIGNATURE_PLATFORM rule should exist');
+    assert.equal(rule.severity, 'high');
+  });
+
+  it('should have CONTRACT_DOCUMENT as medium severity', () => {
+    const rule = getRuleById('CONTRACT_DOCUMENT' as any);
+    assert.ok(rule, 'CONTRACT_DOCUMENT rule should exist');
+    assert.equal(rule.severity, 'medium');
+  });
+
   it('all rules should have required fields', () => {
     for (const rule of ALL_RULES) {
       assert.ok(rule.id, `Rule should have an id`);
