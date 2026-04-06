@@ -89,7 +89,7 @@ For each rule, use Grep to search the relevant file types. Record every match wi
 | 21 | TROJAN_DISTRIBUTION | CRITICAL | md | Trojanized binary download + password + execute |
 | 22 | SUSPICIOUS_PASTE_URL | HIGH | all | URLs to paste sites (pastebin, glot.io, etc.) |
 | 23 | SUSPICIOUS_IP | MEDIUM | all | Hardcoded public IPv4 addresses |
-| 24 | SOCIAL_ENGINEERING | MEDIUM | md | Pressure language + execution instructions |
+| 24 | SOCIAL_ENGINEERING | HIGH | md | Pressure language + execution instructions |
 
 ### Risk Level Calculation
 
